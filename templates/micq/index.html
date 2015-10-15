@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+    <h2>登陆用户：{{ request.user.username }}</h2>
+    {% if request.user.is_authenticated %}
+        <p><a href="{% url 'logout' %}">登出</a></p>
+    {% endif %}
+    <h2>问题列表</h2>
+    <ul>
+        {% for question in question_list %}
+        <li>
+            <p>{{ question.count }} {{ question.title }}</p>
+            <p>{{ question.tag }} {{ question.created }} by {{ question.user.username }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
