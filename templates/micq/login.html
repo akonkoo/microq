@@ -6,12 +6,14 @@
 </head>
 <body>
     <h2>登陆</h2>
+
     <form action="" method="POST">
         {% csrf_token %}
         <p>邮箱：<input type="email" name="email" value="{{ email }}"></p>
         <p>密码：<input type="password" name="password" value="{{ password }}"></p>
         <input type="submit" value="登陆">
     </form>
+
     {% if errors %}
         <ul>
             {% for error in errors %}
@@ -19,6 +21,7 @@
             {% endfor %}
         </ul>
     {% endif %}
+
     <p><a href="{% url 'register' %}">还没有账号？立马注册</a></p>
 </body>
 </html>

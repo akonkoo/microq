@@ -42,14 +42,14 @@ class UserManager(BaseUserManager):
 class MyUser(AbstractBaseUser):
     '''扩展User'''
     # SEX_CHOICES = (('M', '男'),('F', '女'))
-    email = models.EmailField('邮箱', max_length=255, unique=True, db_index=True)
-    username = models.CharField('用户名', max_length=50, unique=True, db_index=True)
+    email = models.EmailField(max_length=255, unique=True, db_index=True)
+    username = models.CharField(max_length=50, unique=True, db_index=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    sex = models.CharField('性别', choices=(('M', '男'), ('F', '女')), default='M', max_length=5)
-    url = models.URLField('个人站点', null=True, blank=True)
-    desc = models.CharField('个人简介', max_length=2000, null=True, blank=True)
-    avatar = models.CharField('头像', max_length=500, null=True, blank=True)
+    sex = models.CharField(choices=(('M', '男'), ('F', '女')), default='M', max_length=5)
+    url = models.URLField(null=True, blank=True)
+    desc = models.CharField(max_length=2000, null=True, blank=True)
+    avatar = models.CharField(max_length=500, null=True, blank=True)
     token = models.CharField(max_length=500, blank=True)
 
     objects = UserManager()
@@ -113,17 +113,22 @@ class Tag(models.Model):
         verbose_name_plural = '标签'
 
 
-class Comment(models.Model):
-    body = models.CharField('评论内容', max_length=500)
+class Question(models.Model):
+    title = models.CharField('标题', max_length=150)
+    body = models.TextField('问题内容')
+    created = models.DateTimeField('创建时间', auto_now_add=True)
+    modified = models.DateTimeField('修改时间', auto_now=True)
 
-    user = models.ForeignKey(MyUser)
+    user = models.ForeignKey(MyUser, verbose_name='创建者')
+    tags = models.ManyToManyField(Tag, verbose_name='标签')
 
     def __unicode__(self):
-        return self.body
+        return self.title
 
     class Meta:
-        verbose_name = '评论'
-        verbose_name_plural = '评论'
+        verbose_name = '问题'
+        verbose_name_plural = '问题'
+        ordering = ['-created']
 
 
 class Answer(models.Model):
@@ -132,8 +137,8 @@ class Answer(models.Model):
     modified = models.DateTimeField('修改时间', auto_now=True)
     count = models.IntegerField('计数', default=0,null=True)
 
-    user = models.ForeignKey(MyUser, verbose_name='创建用户')
-    comments = models.ManyToManyField(Comment, verbose_name='评论')
+    user = models.ForeignKey(MyUser, verbose_name='创建者')
+    question = models.ForeignKey(Question, blank=True, null=True, verbose_name='问题')
 
     def __unicode__(self):
         return self.body
@@ -144,24 +149,24 @@ class Answer(models.Model):
         ordering = ['-created']
 
 
-class Question(models.Model):
-    title = models.CharField('标题', max_length=150)
-    body = models.TextField('问题内容')
-    created = models.DateTimeField('创建时间', auto_now_add=True)
-    modified = models.DateTimeField('修改时间', auto_now=True)
+class Comment(models.Model):
+    body = models.CharField('评论内容', max_length=500)
 
     user = models.ForeignKey(MyUser, verbose_name='创建者')
-    answers = models.ManyToManyField(Answer, verbose_name='答案')
-    comments = models.ManyToManyField(Comment, verbose_name='评论')
-    tags = models.ManyToManyField(Tag, verbose_name='标签')
+    question = models.ForeignKey(Question, blank=True, null=True, verbose_name='问题')
+    answer = models.ForeignKey(Answer, blank=True, null=True, verbose_name='答案')
 
     def __unicode__(self):
-        return self.title
+        return self.body
 
     class Meta:
-        verbose_name = '问题'
-        verbose_name_plural = '问题'
-        ordering = ['-created']
+        verbose_name = '评论'
+        verbose_name_plural = '评论'
+
+
+
+
+
 
 
 
