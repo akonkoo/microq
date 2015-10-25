@@ -5,8 +5,8 @@
     <title>{{ question.title }}</title>
 </head>
 <body>
-    {% for tag in tag_list %}
-        <p>{{ tag }}</p>
+    {% for tag in question.tags.all %}
+        <span>{{ tag }}</span>
     {% endfor %}
 
     <h2>{{ question.title }}</h2>
@@ -29,7 +29,7 @@
     <h3>所有答案：</h3>
     {% for answer in answer_list %}
         <p>{{ answer }}</p>
-        <p>由 {{ answers.user.username }} 回答于 {{ question.created }}</p>
+        <p>由 {{ answer.user.username }} 回答于 {{ question.created }}</p>
         <p>答案评论：</p>
         {% for answer_comment in answer_comment_list %}
             <p><font size="2">{{ answer_comment }}</font></p>
@@ -37,7 +37,7 @@
     {% endfor %}
 
     <h3>添加回答：</h3>
-    <form action="{% url 'create_answer' %}" method="post">
+    <form action="{% url 'create_answer' question.id %}" method="post">
         {% csrf_token %}
         {{ answer_form.as_p }}
         <input type="submit" value="发布">

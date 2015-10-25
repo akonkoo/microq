@@ -51,13 +51,16 @@ class QuestionForm(forms.ModelForm):
         fields = ['title', 'body', 'tags']
 
 
+
 class AnswerForm(forms.ModelForm):
     body = forms.CharField(label='回答', widget=forms.Textarea)
-    question = forms.CharField(widget=forms.HiddenInput())
+    #question = forms.CharField(widget=forms.HiddenInput())
 
     class Meta:
         model = Answer
-        fields = ['body','question']
+        fields = ['body']
+
+
 
 
 

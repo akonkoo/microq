@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 
+from django.views.generic.edit import UpdateView
+
 
 def index(request):
     question_list = Question.objects.all()
@@ -52,15 +54,17 @@ def logout(request):
 
 
 def question_detail(request, pk):
+    try:
+        question = Question.objects.get(pk=pk)
+    except:
+        return HttpResponseRedirect('micq/fail.html')
 
-    question = Question.objects.get(pk=pk)
-    answer_form = AnswerForm({'question': question})
+    answer_form = AnswerForm()
 
     answer_list = Answer.objects.filter(question=question)
-    tag_list = Tag.objects.filter(question=question)
+    #tag_list = Tag.objects.filter(question=question)
     question_comment_list = Comment.objects.filter(question__pk=pk)
     answer_comment_list = Comment.objects.filter(answer__question__pk=pk)
-
 
     return render(request, 'micq/question_detail.html', locals())
 
@@ -74,45 +78,76 @@ def create_question(request):
                              body=form.cleaned_data['body'],
                              user=request.user)
             question.save()
+
+            #使用split方法拆分用户输入的tags,注意create的类型
             #使用add()方法增加多对多关系的记录
-            tags = Tag.objects.create(tag=form.cleaned_data['tags'])
-            question.tags.add(tags)
-            return render(request, 'micq/question_detail.html', locals())
+            tag = form.cleaned_data['tags']
+            for item in tag.split(' '):
+                tags = Tag.objects.create(tag=item)
+                question.tags.add(tags)
+            return HttpResponseRedirect(reverse('question_detail', args=[question.pk]))
     else:
         form = QuestionForm()
-    return render(request, 'micq/create_question.html',{'form':form})
+    return render(request, 'micq/create_question.html', {'form': form})
+
 
 @login_required()
 def question_delete(request, pk):
     try:
         question = Question.objects.get(pk=pk)
     except:
-        return render(request, 'micq/fail.html', {'error':'记录不存在或已被删除。'})
+        return HttpResponseRedirect('micq/fail.html')
     question.delete()
-    return HttpResponseRedirect(reverse('index', args=[]))
+    return redirect('index')
+
 
 @login_required()
 def question_update(request, pk):
     try:
         question = Question.objects.get(pk=pk)
     except:
-        return render(request, 'micq/fail.html', {'error':'记录不存在或已被删除。'})
+        return render(request, 'mciq/fial.html')
+
     if request.method == 'POST':
-        form = QuestionForm(request.POST, instance=question)
+        form = QuestionForm(request.POST or None, instance=question)
+    
         if form.is_valid():
-            form.save
-            return render(request, 'micq/create_question.html', locals())
+            f = form.save(commit=False)
+
+            question.tags.clear()
+            tag = form.cleaned_data['tags']
+            for item in tag.split(' '):
+                tags = Tag.objects.create(tag=item)
+                question.tags.add(tags)
+
+            f.save()
+        return HttpResponseRedirect(reverse('question_detail', args=[question.pk]))
+    else:
+        form = QuestionForm(instance=question)
+        
+
+    return render(request, 'micq/create_question.html', {'form': form})
 
 
-def create_answer(request):
+@login_required()
+def create_answer(request, pk):
     if request.method == 'POST':
         answer_form = AnswerForm(request.POST)
         if answer_form is not None and answer_form.is_valid():
+
             answer = Answer.objects.create(body=answer_form.cleaned_data['body'],
-                                           question=answer_form.cleaned_data['question'],
-                                           user=request.user)
+                                            user=request.user)
             answer.save()
 
+            #增加对应ForeigKey数据
+            answer.question = Question.objects.get(pk=pk)
+            answer.save()        
+        return HttpResponseRedirect(reverse('question_detail', args=[pk]))
+
+
+
+        
+            
 
 
 

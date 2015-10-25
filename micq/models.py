@@ -4,6 +4,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
+from django.core.urlresolvers import reverse
+
 
 class UserManager(BaseUserManager):
     '''通过邮箱，密码创建用户'''
@@ -124,6 +126,9 @@ class Question(models.Model):
 
     def __unicode__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('question_detail', kwargs={'pk':self.pk})
 
     class Meta:
         verbose_name = '问题'
