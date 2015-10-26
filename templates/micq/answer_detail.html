@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ question.title }}</title>
+</head>
+<body>
+	{% for tag in question.tags.all %}
+		<span>{{ tag }}</span>
+	{% endfor %}
+    <h2>{{ question.title }}</h2>
+    <p>{{ question.body }}</p>
+    <br>
+    {% if answer_update %}
+    	<form action="" method="post">
+    		{% csrf_token %}
+    		{{ form.as_p }}
+    		<input type="submit" value="发布">
+    	</form>
+    {% else %}
+    	<a href="{% url 'question_detail' question.id %}">查看所有回答</a>
+    	<p>回答：{{ answer }}</p>
+    	{% if answer.user == request.user %}
+	    	<span><a href="{% url 'answer_update' question.pk answer.id %}">修改</a></span>
+	    	<span><a href="{% url 'answer_delete' question.pk answer.id %}">删除</a></span>
+	    {% endif %}
+    {% endif %}
+</body>
+</html>

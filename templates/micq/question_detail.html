@@ -20,6 +20,15 @@
         </p>
     {% endif %}
 
+    <h5><a href="{% url 'create_comment' question.pk %}">添加评论</a><h5>
+    {% if c_q %}
+        <form action="{% url 'create_comment' question.pk %}" method="POST">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <input type="submit" value="发布">
+        </form>
+    {% endif %}
+
     <h4>评论：</h4>
         {% for question_comment in question_comment_list %}
             <p><font size="2">{{ question_comment.body }}</font></p>
@@ -28,7 +37,7 @@
 
     <h3>所有答案：</h3>
     {% for answer in answer_list %}
-        <p>{{ answer }}</p>
+        <p><a href="{% url 'answer_detail' question.pk answer.id %}" target="_blank">{{ answer }}</a></p>
         <p>由 {{ answer.user.username }} 回答于 {{ question.created }}</p>
         <p>答案评论：</p>
         {% for answer_comment in answer_comment_list %}

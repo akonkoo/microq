@@ -65,7 +65,7 @@ def question_detail(request, pk):
     #tag_list = Tag.objects.filter(question=question)
     question_comment_list = Comment.objects.filter(question__pk=pk)
     answer_comment_list = Comment.objects.filter(answer__question__pk=pk)
-
+    c_q = False
     return render(request, 'micq/question_detail.html', locals())
 
 
@@ -97,7 +97,8 @@ def question_delete(request, pk):
         question = Question.objects.get(pk=pk)
     except:
         return HttpResponseRedirect('micq/fail.html')
-    question.delete()
+    if question.user == request.user:
+        question.delete()
     return redirect('index')
 
 
@@ -108,25 +109,27 @@ def question_update(request, pk):
     except:
         return render(request, 'mciq/fial.html')
 
-    if request.method == 'POST':
-        form = QuestionForm(request.POST or None, instance=question)
-    
-        if form.is_valid():
-            f = form.save(commit=False)
+    if question.user == request.user:
 
-            question.tags.clear()
-            tag = form.cleaned_data['tags']
-            for item in tag.split(' '):
-                tags = Tag.objects.create(tag=item)
-                question.tags.add(tags)
-
-            f.save()
-        return HttpResponseRedirect(reverse('question_detail', args=[question.pk]))
-    else:
-        form = QuestionForm(instance=question)
+        if request.method == 'POST':
+            form = QuestionForm(request.POST or None, instance=question)
         
+            if form.is_valid():
+                f = form.save(commit=False)
 
-    return render(request, 'micq/create_question.html', {'form': form})
+                question.tags.clear()
+                tag = form.cleaned_data['tags']
+                for item in tag.split(' '):
+                    tags = Tag.objects.create(tag=item)
+                    question.tags.add(tags)
+
+                f.save()
+            return HttpResponseRedirect(reverse('question_detail', args=[question.pk]))
+        else:
+            form = QuestionForm(instance=question)
+            
+
+        return render(request, 'micq/create_question.html', {'form': form})
 
 
 @login_required()
@@ -143,6 +146,54 @@ def create_answer(request, pk):
             answer.question = Question.objects.get(pk=pk)
             answer.save()        
         return HttpResponseRedirect(reverse('question_detail', args=[pk]))
+
+
+def answer_detail(request, pk, id):
+    question = Question.objects.get(pk=pk)
+    answer = Answer.objects.get(id=id)
+    return render(request, 'micq/answer_detail.html', locals())
+
+
+@login_required
+def answer_update(request, pk, id):
+    question = Question.objects.get(pk=pk)
+    answer = Answer.objects.get(id=id)
+    if answer.user == request.user:
+        if request.method == 'POST':
+            form = AnswerForm(request.POST or None, instance=answer)
+            if form.is_valid():
+                form.save()
+            return HttpResponseRedirect(reverse('question_detail', args=[pk]))
+        else:
+            form = AnswerForm(instance=answer)
+        return render(request, 'micq/answer_detail.html', {'question':question,
+                                    'form': form,
+                                    'answer_update': True})
+
+
+@login_required
+def answer_delete(request, pk, id):
+    question = Question.objects.get(pk=pk)
+    answer = Answer.objects.get(id=id)
+    if answer.user == request.user:
+        answer.delete()
+        return HttpResponseRedirect(reverse('question_detail', args=[pk])) 
+
+
+def create_comment(request, pk):
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form is not None and comment_form.is_valid():
+            comment = Comment.objects.create(body=comment_form.cleaned_data['bdoy'],
+                                            user=request.user)
+            comment.save()
+            comment.question = Question.objects.get(pk=pk)
+            comment.save()
+        return HttpResponseRedirect(reverse('question_detail', args=[pk]))
+    else:
+        comment_form = CommentForm()
+        c_q = True
+        return HttpResponseRedirect(reverse('question_detail', args=[pk])) 
 
 
 

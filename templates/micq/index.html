@@ -17,7 +17,7 @@
         <li>
             <p>
                 {{ question.count }}
-                <a href="{% url 'question_detail' question.id %}">{{ question.title }}</a>
+                <a href="{% url 'question_detail' question.id %}" target="_blank">{{ question.title }}</a>
             </p>
             <p>{{ question.tag }} {{ question.created }} by {{ question.user.username }}</p>
         </li>
