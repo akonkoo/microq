@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }}</title>
+</head>
+<body>
+    <h2>用户名：{{ user.username }}</h2>
+    <p>性别：{{ user.sex }}</p>
+    <p>微博：{{ request.user.url }}</p>
+    <p>个人简介：{{ request.user.desc }}</p>
+    <h3><a href="{% url 'userchange' %}">修改资料</a></h3>
+    <h3><a href="{% url 'password_change' %}">修改密码</a></h3>
+    <h2>我的问题：</h2>
+    {% for question in question_list %}
+        <ul>
+            <li>{{ question.title }}</li>
+        </ul>
+    {% endfor %}
+    <hr>
+    <h2>我的回答：</h2>
+    {% for answer in answer_list %}
+        <ul>
+            <li>
+                <p>{{ answer.question.title }}</p>
+                <p>{{ answer }}</p>
+            </li>
+        </ul>
+    {% endfor %}
+</body>
+</html>
